@@ -1,0 +1,581 @@
+Különbözõ DWH adat modellezési módszeretek:  
+  Normalizált adatmodellek 
+  Csillagsémás adatmodellek 
+  Szupertáblák (Wide Column) 
+  Data Vault
+  
+Általában elmondható, hogy az egyes módszerek az adattárház más-más rétegében használhatóak jól.
+
+
+A megfelelõen normalizált modell védelmet nyújt számos hibalehetõség (anomália) ellen:
+ - Duplikát (eltérõ) adat
+ - adat (részlet) hiány
+ - törlés hatása hivatkozási láncon problémát okoz
+ 
+ 
+Korszerû DWH modelezés alapkövetelményei: 
+ Átlátható és könnyen használható 
+ Lekérdezésekre optimalizált 
+ Gyors végrehajtást biztosít
+ 
+ 
+- Fogalmak: 
+ Dimenziók 
+ Valamilyen jellemzõ egyedi értékeit tartalmazó tábla
+ Például termék, ügyfél, idõ, nap  
+
+ Ténytáblák 
+ A dimenziók által jellemzett valamilyen mértékek gyûjteménye 
+ Például :darabszám, tranzakció, mennyiség, egyenleg 
+
+ Csillagséma 
+ Ténytáblát és a hozzá kapcsolódó dimenziós táblákat alkalmazó modellezési mód.
+ 
+ 
+Az adattárház-modellezés lépései 
+  Üzleti folyamat kiválasztása 
+  A mérendõ tényezõk azonosítása 
+  A felbontás meghatározása 
+  A dimenziók azonosítása és tervezése 
+  A mértékek azonosítása és tervezése 
+
+A DWH tervezési folyamatra jellemzõ, hogy a fenti lépések ismétlõdnek 
+a teljes tervezési folyamat során akár több hurokban.
+
+
+
+
+Dimenziós busz architektúra 
+ Számos ténytábla osztozik az egységesített dimenziókon, 
+ ezzel biztosított az adatpiacok közötti átjárás,
+ a duplikációk elkerülése és erõforrás optimaizáció.
+Mátrix hálóban jeleníjük meg:
+  sorokban a Folyamatok-> ténytáblák 
+  oszlopokban a dimenzió táblák 
+ helyezkednek el. 
+Jelölni szokták még a priorítást is.
+ 
+ 
+A Dimenziós busz fõ alkotóelemei: 
+ Tény-dimenzió mátrix 
+ Konform dimenziók 
+ Konform ténytáblák 
+
+
+  A közös alap a legrészletesebb, elemi szinten felépített dimenziós táblatörzs 
+  Az összes dimenziós tábla ennek másolata vagy valamilyen részhalmaza 
+  Így garantálható az egyezõség 
+     A kulcsértékekre 
+	 Attribútum nevekre 
+	 Attribútum értékekre 
+  A konform dimenziók teszik lehetõvé a keresztbe fúrást 
+ 
+ 
+    Konform ténytáblák 
+       A több helyen szereplõ, azonos jelentésû mértékeknek egységes definícióval 
+	   kell rendelkezniük
+	     Azonos jelentés 
+		 Azonos számítási mód 
+		 Azonos címkék 
+	 Ha ezek közül valamelyik nem teljesül, akkor nem tekinthetõek konformnak 
+ 
+----
+ 
+ Dimenzio táblák jellezmzõi:
+  Egy dimenziós tábla alapvetõen leíró jellegû szöveges vagy numerikus  attribútumokat tartalmaz 
+  Egy sor általában egy dimenzióértéket ír le, annak összes fontos tulajdonságával együtt 
+  A dimenziós táblák tartalmazhatnak viszonylag nagy számú sort is (tízmilliós nagyságrend), 
+    de a táblák mérete összeségében általában nem jelentõs 
+  A dimenziós tábla mindig nagyságrendekkel kisebb, mint a ténytáblák (1:N kapcsolat) 
+
+ Dimenzió tábla fõ elemei:
+   Kulcs mezõk
+     Mesterséges kulcsok 
+	   Alapvetõen fontos a mesterséges azonosító mezõk használata (surrogate keys) 
+	     Függetlenséget biztosít a forrásrendszeri azonosítóktól 
+	     Támogatja a változáskezelést 
+	   Minden dimenziónak az elsõdleges kulcsa ilyen legyen 
+	     Általában sima integer mezõ 
+	     Fontos a kis méret 
+	   A ténytáblának is lehet, de nem feltétlenül szükséges 
+	   
+	   Természetes kulcsok 
+  	     A dimenziós táblában jellemzõen attribútumként jelennek meg 
+		 A dimenziókarbantartás során használatos 
+		 
+		 
+   Attribútum (érték megjelenítõ, jellemzõ) mezõ   
+   
+    A dimenziós tábla nagy részét az attribútumok (jellemzõk) teszik ki 
+  	
+	Az egyszerû jellemzõk közvetlenül érkeznek a forrásrendszerekbõl 
+	
+	A származtatott jellemzõket az adattárházas betöltés során állítjuk elõ 
+   	   Lookup értékek 
+	   Mezõtranszformációk 
+	   Stb. 
+	   
+	   
+	   
+	   A transzformációk céljai 
+	      A felhasználók munkájának megkönnyítése 
+	      Az adatokra vonatkozó, sokszor rejtett tudás explicit megfogalmazása 
+	      Érhetõ, korrekt információtartalmú jelentések készítésének  támogatása 
+		  
+	   A transzformációkat mindig valamilyen paramétervezérelt módon érdemes végezni 
+  	     Könnyeb áttekinteni 
+		 Könnyebb karbantartani 
+		 Naplózható 
+		 Érvényességkezeléssel ellátható 
+		 
+		 
+		 Egyszerû transzformációk 
+ 		    Egy bemeneti mezõbõl készítünk egy másik mezõt 
+			Általában valamilyen szótártábla segítségével (lookup) 
+			
+		Jellemzõ példák 
+		    Kód átalakítása üzleti megnevezéssé  
+			Technikai elnevezés átalakítása üzleti megnevezéssé 
+			
+		A dimenziós táblában az eredeti értéket is szerepeltetni kell 
+  		   Könnyebb áttekinteni 
+		   Adatminõségi vizsgálatok és hibakeresés támogatása 
+		   A felhasználók elõl elrejthetõ 
+		   
+        Komplex transzformációk 
+  		   Egy mezõbõl készítünk több mezõt 
+		   Több mezõbõl készítünk egy mezõt 
+
+		Tipikus használat 
+		   Aggregált jellemzõk készítése 
+		     Az értékek hierarchiába szervezése összesítõ mezõ készítésével 
+		     Biztosítja az egységes alkalmazást a felhasználók között 
+			 
+		   Többmezõs transzformációk 
+ 		      Több mezõ alapján egy új jellemzõ számítása 
+              Általában valamilyen üzleti szabály leképezése a cél 
+
+          Mezõszétrobbantás 
+             Az a speciális eset, amikor a forrásrendszer egy mezõt többféle információ tárolására használ 
+			 Általában valamilyen hierarchikus kód alkalmazása történik 
+             A feladat ilyenkor az önállóan értelmes jellemzõk azonosítása és külön modellezése
+			  
+		Hierachiák kezelés	  
+		  Egyszerû hierarchiák jellemzõi 
+ 		     Szintalapúak 
+			 Teljesek 
+			 
+		  Klasszikus példák 
+		    Dátum: Év-Hó-Nap 
+		    Földrajzi régiók: Ország-Város–Megye 
+
+		  Az egyszerû hierarchiák tartalmazhatnak  alternatív szinteket is 
+		    Év-hó-nap és év-hét-nap hierarchiák 	
+
+        A idõ múlásával a normál üzletmenet következményeként a dimenziók elemei megváltoznak 
+		   Az ügyfelek költöznek, diplomáznak, nõsülnek 
+		   
+		Az adattárház feladata kettõs: 
+  		    Mindig a legfrissebb információkkal szolgálni 
+			Historikus áttekintést nyújtani 
+			
+	    Ezekre a célokra eltérõ modellezési technikák léteznek 		
+		  A dimenziót érintõ változások viszonylag lassúak (nincs napi több millió új rekord) 
+		  innen a lassan változó dimenzió  (slowly changing dimensions, SCD) elnevezés 
+		  
+		Az SCD fajtái 
+ 		   1. típus: Felülírás 
+		      Az elsõ típus esetén az adott jellemzõ egyszerûen felülírásra kerül 
+			      Könnyû és gyors a karbantartás 
+				  Nem kell kulcsokat módosítani, a ténytábla érintetlen marad 
+				  Viszont az adattárház a múltbeli állapotokról nem tartalmaz információt 
+				  
+				  Alkalmazási esetek 
+				     Ha az érintett változó értelemszerûen nem módosulhat (Leánykori név) 
+					 Az adott jellemzõnek üzleti szempontból érdektelen a korábbi értéke 
+					 
+		   2. típus: Sor duplikálás 
+		   
+		      A második típus esetén egy új sort adunk hozzá a dimenziós táblához 
+			    Az elõzõ sor megmarad, így megõrzésre kerül a jellemzõ története 
+				Nem kell ténytáblát módosítani 
+				Viszont növekszik a dimenziós tábla mérete 
+				
+			  Kezelési mód 
+				A sor új mesterséges kulccsal fog rendelkezni 
+				Viszont a forrásrendszeri azonosító nem változik, ez köti össze a két rekordot 
+				Az érvényességet pedig két dátummezõ (valid from-valid to) jelzi 
+				Az aktuális verziót érdemes külön megjelölni 
+		   
+		   Tények és az SCD2 dimenzió  kapcsolata 
+		      A ténytábla sorai mindig a  megfelelõ, a tényrekord értéknapján érvényes  dimenziós rekordra mutatnak 
+			    A változás elõtti tényrekordok az elsõ dimenziós sorra 
+			    A változás utániak a másodikra hivatkoznak 
+			  Így ha valamilyen változáskezelt jellemzõ alapján futtatunk egy lekérdezést, 
+			  akkor minden ténysor a megfelelõ helyre kerül 
+
+ 		   Alkalmazási területek 
+ 			  Általánosan használt az idõbeli változások kezelésére 
+			  Nagy és gyakran változó dimenziók esetén méretproblémák lehetnek 
+		   
+		   
+		   
+		   3. típus: Oszlop duplikálás 
+
+             A harmadik típus esetén egy új mezõbe kerül tárolásra az elõzõ érték 
+ 			    Szintén csak a dimenziós tábla karbantartását igényli 
+				Viszont csak nagyon korlátozottan követi a változásokat 
+				
+			 Alkalmazási terület 
+			   Mivel minden tényrekordhoz rendelkezésre áll az adott jellemzõ mindkét (aktuális és elõzõ) értéke, 
+			    így egyszerre lehet lekérdezni akár az egyik, akár a másik szerint 
+			   Alternatív valóságok támogatása 
+	
+	      Speciális dimenzió fajták:
+		     A degenerált dimenziókat olyan esetekben használjuk, ha 
+ 			     Egy adott jellemzõ a ténytábla minden vagy majdnem minden sorára vonatkozik 
+				 Nem kapcsolódik hozzá semmilyen más tulajdonság 
+				 
+				 Jellemzõ példa a rendelésszám 
+ 				    Ilyenkor egy új, a ténytáblával megegyezõ számosságú dimenziós tábla létrehozása helyett 
+					magában a ténytáblában tároljuk az ilyen jellemzõket 
+		   
+		   
+		   Szerepjátszó dimenziók 
+               Egy ténytáblához ugyanaz a dimenzió több különbözõ szerepben is kapcsolódhat 
+			   Megrendelési dátum 
+			   Szállítási dátum 
+			   Fizetési dátum 
+			   
+			Ilyenkor egy fizikai dimenziós tábla többféle szerepet tölt be 
+			  Csak egyszer kell karbantartani 
+			  A különbözõ szerepeket nézetekkel érdemes támogatni 
+			  Egyedi címkék biztosítása fontos a különbözõ szerepeknél 
+			  
+			  
+			Szintetikus dimenziók 
+              Sok esetben egy dimenzióhoz nem áll rendelkezésre természetes kulcs 
+			    Ha például nincs terméktörzs 
+			    Ha több különbözõ táblából emelünk ki összetartozó jellemzõket 
+			    Speciális eset a hulladék (junk) dimenzió, 
+			      ahová a sehová nem passzoló jellemzõket gyûjtjük 
+			    A szintetikus dimenziók egy sorát a jellemzõk egy adott kombinációja adja   
+			  
+			  
+			 Szintetikus dimenzió kezelése 
+			   A friss forrásadatokból elõállítjuk az összes most aktuális értékkombinációt 
+			   Megnézzük, ezek közül melyik nem szerepel még a dimenziós táblában 
+			   Ezeket új sorként felvesszük egy integer kulcs alkalmazásával 
+			   Opcionális sor kerülhet a dimenziós táblában létezõ, 
+			     de a friss forrásadatokban nem szereplõ kombinációk lezárására 
+			   Ezek után jöhet a ténytöltés 
+			   
+			   
+			   
+   technikai mezõ 
+   
+   
+   Ténytáblák 
+      A ténytáblák tartalmazzák az adott üzleti folyamatra vonatkozó adatokat 
+	  Ezek általában mérõszámok 
+  	      Plusz a degenerált dimenziókból származó egyedi azonosítók 
+		  A jellemzõ tulajdonságokat a dimenziós táblákra hivatkozó külsõ kulcsok mutatják 
+		  Itt is szerepelhetnek technikai mezõk 
+		  A ténytáblák mérete igen nagy is lehet (több száz millió vagy akár milliárd sor), 
+		    és nagyon sok helyet foglalnak el 
+			
+			
+	A ténytábla felbontása alapvetõ fontosságú 
+	     A ténytáblában tárolt adatok finomságának jellemzõje  
+	     A felbontást jellemzõen a táblában szereplõ dimenziók határozzák meg 
+	     Nem szabad egy táblán belül különbözõ felbontású sorokat tartani 
+		 
+	   Ugyanazon üzleti folyamatot többféle felbontású táblában is lehet tárolni 
+	     Egyedi tranzakciós felbontás 
+	     Napi vásárlások felbontás 
+		 
+	Általában törekedeni kell a lehetõ legfinomabb felbontás alkalmazására 		
+ 
+ 
+      Mértékek jellemzõi 
+        Additivitás 
+ 		   Teljesen additív, ha minden dimenzió szerint lehet értelmesen összegezni 
+		      Eladott darabszám, átutalt összeg 
+		   Részben additív, ha nem minden dimenzió mentén lehet értelmesen összegezni 
+		      Hóvégi egyenlegek, raktárkészletek 
+ 		   Nem additív, ha egyáltalán nem lehet összegezni, 
+		      degenerált dimenziós mezõk (általában szöveg) 
+ 
+ 
+        A ténytáblák kezelési és karbantartási módtól függõen többféle típusúak lehetnek 
+		   Tranzakciós táblák 
+		       Egy sor egy adott üzleti tranzakciót ír le 
+			   Egy értékesítés 
+			   Egy átutalás 
+			   Egy készpénzfelvétel 
+			   Egy sor egy idõpillanat jelképez 
+			   Az egyes rekordok a táblába írásuk után már nem módosulnak 
+			   Ez a leggyakrabban használt típus 
+ 
+ 
+		   Idõsoros pillanatfelvétel táblák 		   
+		       Egy sor egy adott, elõre meghatározott idõszak adatait tartalmazza 
+			   Egy nap értékesítési forgalma 
+			   Adott ügyfél hóvégi egyenlege 
+			   Általában az idõszak végére vonatkozva készül 
+			   Az egyes rekordok a táblába írásuk után már nem módosulnak 
+			   
+		   Frissített pillanatfelvétel táblák 
+		       Egy sor egy folyamat teljes életútját leírja 
+			   A sorok beszúrás esetén még frissülnek, akár több alkalommal is 
+			   Tipikusan több dátummezõt is tartalmaznak 
+			Alkalmazásával jól kiszolgálhatóak a több tranzakciós ténytábla 
+			összekapcsolását igénylõ lekérdezések 
+ 
+		
+         Csupasz ténytáblák 
+           Csupasz ténytábla (Factless Fact) 
+		   Olyan tábla, ami csak a dimenziós kulcsokat tartalmazza, mértékeket nem 
+		     Dimenzióértékek együttes elõfordulását írja le 
+		     Melyik tárgyat melyik tanár tanítja? 
+			 Mikor volt egy adott termék promóciós? 
+		 Általában olyankor használatos, amikor nem köthetõ semmilyen értelmes mérõszám egy fontos  folyamathoz vagy jelenséghez 		
+		   
+		   
+	
+		Idõkezelt ténytáblák 
+           Ténytáblákban is elõfordulhat érvényességkezelés 
+		   Például lassan változó napi egyenlegadatok, ahol sok sor ismétlõdne 
+		   valid_from, valid_to jellegû mezõk 
+		   Elég ritkán kerül alkalmazásra 
+		   
+        Idõkezelés státuszkövetõ ténytáblákban 
+ 		    A státuszkövetõ (accumulating snapshot) ténytáblák hiányossága, hogy nem mutatnak teljes históriát 
+			A folyamaton vagy egyes részein többször is átmenõ elemek nem követhetõek 
+ 
+            SCD2 típusú dátumkezelés 
+			   A folyamat minden lépésénél új sor felvétele, az elõzõ sor lezárása 
+			   A teljes história rendelkezésre áll 
+			Hátránya, hogy egy folyamat nem egy sor, hanem annyi, ahány állapotváltozás történik 
+ 
+ 	A megfelelõ ténytáblatípus kiválasztása a forrásadatok és az üzleti igények függvényében 
+		történik 
+		
+		
+Haladó modellezési elemek:
+  Támogató dimenziók 
+      Általában a dimenziós táblákat egyben modellezük (nincs snowflake), 
+	  de vannak kivételek 
+	    Ügyfél székhelyére vonatkozó, külsõ  forrásból származó, 
+	     sok elemet  tartalmazó adathalmaz (például KSH) 
+		 
+	  Nem tesszük be a dimenziós táblába, mert 
+	     Más ütemezés szerint frissül, más forrásból 
+		 Más a felbontása (ügyfél helyett település) 
+		 Lényeges helymegtakarítás érhetõ el (SCD2 változások minimalizálása) 		
+		
+		Ügyfélhez kapcsolódó dátumjellegû adatok 
+		  Elsõ vásárlás dátuma 
+		  Többfajta, sima dátumaritmetikával nem leírható mezõre is igény van 
+		  Iyenkor a dátum dimenzió kerül támogató dimenzióként bekötésre, egyedi címkékkel 
+		  Nem összekeverendõ a szerepjátszó dimenzióval 
+		  
+		   Szerepjátszó dimenzió: dimenziós kulcs a ténytáblában található 
+		   Támogató dimenzió: dimenziós kulcs a másik dimenzióban található 
+		
+		
+		
+		Minidimenziók 
+           A lassan változó dimenziók méretezési és performancia problémákat okozhatnak, ha 
+		      A dimenzió mérete önmagában is nagy 
+			  A változások üteme jelentõs 
+			  Például havonta frissülõ ügyféldemográfiai vagy hitelminõsítési adatok 
+        Ilyenkor a gyorsan változó jellemzõket egy külön minidimenzióba választjuk le 
+		
+		  Ügyféldemográfia kiemelve a dimenziós táblából 
+		     Ügyféltáblában maradnak a valóban lassan változó alapadatok  
+		     Szintetikus demográfia mini dimenziós tábla külön 
+			 
+		  Kezelés 
+			A mennyiség jellegû attribútumokat (pl. kereset) diszkrét  sávokba kell tördelni, 
+			különben túl sok értéke lesz a dimenziónak 
+		100.000 érték felett már gyanús a helyzet 
+		
+		
+		  Ha a minidimenzió saját maga is túlságosan nagyra nõ, akkor lehetséges megoldás a darabolás 
+		    Több, független részhalmaz kiemelése önálló minidimenzióvá 
+		      Hitelminõsítések 
+			  Településadatok 
+			  Kutatásból származó preferenciák 
+			  
+		Az alapvetõ cél itt is a túlságosan gyors változások elkerülése 
+		
+		
+		
+		Csupasz ténytáblák 
+          Ügyfélprofilozás  
+           Adott egy nagy ügyféldimenzió, számos idõben sûrûn változó jellemzõvel 
+           Szeretnénk az ügyfelek aktuális állapotát (profilját) 
+            bármelyik múltbeli idõpontra megállapítani 
+		
+		
+		Szabvány csillagsémák 
+		   Az alap ügyféldimenzió csak minimális SCD2-t tartalmaz 
+		   A sûrûn változó jellemzõkbõl minidimenziók készülnek (3-4) 
+		   Készül hagyományos tranzakciós ténytábla  
+		   Készül hóvégi snapshot  
+		   Mindkettõ tartalmazza az összes dimenziós kulcsot 
+		   
+		A profilkészítés még nincs megoldva! 
+		   Ha nincs éppen tranzakció vagy hóvége, akkor nincs adat 
+		   
+		Profil ténytábla alkalmazása 
+		    A profilozáshoz külön készül egy csupasz ténytábla, amely a dimenziós kulcsokat tartalmazza 
+			Ebbe minden egyes SCD2 jellemzõ változásakor bekerül egy plusz sor  
+			A ténytáblában szerepel egy kezdõ és végdátum (kulcs), ennek segítségével tetszés szerinti idõpontra elõállítható a profil 
+			Az SCD2 kezeléssel sok sor megtakarítható, feltéve hogy az átlagos ügyfél  profil ritkán változik    
+		   
+		   
+		   
+		Komplex hierarchiák kezelése 
+           Bonyolult, szintalapon nem, csak szülõgyerek kapcsolattal leírható táblák 
+              Ügyfelek 
+			  Szervezeti egységek 
+			  Fõkönyvi számlák 
+			  Termékkódok és gyártási fák 
+			  
+			  
+		A hierarchia leírására egy speciális szerkezetû szülõ-gyerek táblát alkalmazunk 
+		    A cél az, hogy sima SQL alkalmazásával elõ lehessen állítani egy adott 
+			elemhez hierarchikusan tartozó összes sort 
+			Ennek érdekében a leíró táblában az egyes elemek összes alárendeltjére van 
+			külön sor Az egyes sorokban speciális segédmezõkkel lehet támogatni 
+			a lekérdezések könnyebb elkészítését 
+		
+		
+		
+		Csoportosító dimenziók 
+          Sok-sok egyedi értékkel rendelkezõ attribútumok hatékony lekérdezése 
+		     Hívások hossza 
+			 Idõszakok kezelése 
+			 Összeghatárok kezelése 
+			   Az egyszerûbb esetekben az intervallumok hossza elõre ismert 
+			   Egy csoportosító tábla többféle összegzést is támogathat 
+			   Érdemes a csoportosítás alapfelbontását a lehetõ legrészletesebbre megválasztani,
+                így a késõbbi átsávozásokat rugalmasabban lehet támogatni 
+				
+		Bonyolultabb a helyzet, ha a felhasználó egyedileg szeretne sávokat definiálni 
+		   Tetszés szerint meghúzhatja az értékhatárokat 
+		   Nem lehet elõre meghatározni a minimális felbontást 
+		   Egy kézi karbantartási táblában kell tárolni a sávdefiníciókat 
+		   Ehhez valamilyen interaktív karbantartó felület szükséges 
+		Komoly performanciagondokat okozhat a nem hagyományos kapcsolófeltétel miatt
+		
+		
+		
+		Többértékû dimenziók 
+           Többértékû dimenzióról akkor beszélünk, amikor egy tényrekordhoz egyszerre 
+		   több dimenzióérték tartozhat 
+		   Klasszikus példa a folyószámla feletti rendelkezés 
+		      Az Ügyfél és a Számla dimenzió közé bekerül egy kapcsolótábla, 
+              amely súlyozási arányt is tartalmaz ? 50-50% vagy 33%-33%-33% stb. 
+		
+		
+		Intelligens dátum kulcsok 
+             A dátum dimenzió kulcsa sorszám, de intelligens sorszám, 
+			 hogy a particionálást támogassuk 
+			    20080101 
+				20080102 
+				… 
+			Azonban a felhasználók elõl el kell rejteni, hogy még véletlenül se ezt használják 
+			Nehogy a kulcsértékre kezdjenek feltételeket megfogalmazni 
+			
+			Másutt továbbra sem szabad intelligens kulcsokat alkalmazni, a dátum speciális eset 
+                A dátumok elõre ismertek 
+                Nem módosulnak és nem törlõdnek 
+				
+				
+		Duális jellemzõk 
+         Duális attribútumok kezelése 
+         Egyszerre dimenziós jellemzõ és mérõszám is 
+		     Árak: Lehetne a termék dimenzió része, de inkább tény jellegû, 
+			   mert rengeteget változik 
+			 Biztosítási limitek: Egyrészt termékjellemzõ (csoportosításban, 
+			 szûrésben gyakran használt), másrészt tényjellemzõ is (változhat idõben, 
+			 összeadjuk és átlagoljuk sokszor) 
+		 Megoldás: mindkét módon szerepeltessük! 
+		   Elsõdleges mérõszám egy ténytáblában, de a dimenziós jellemzõbe is frissítésre kerül 
+		   Fontos, hogy a modellezés során a cél nem az elegancia, 
+		   hanem a könnyû használhatóság 
+		   
+         A „munkát” nyomni kell az ETL felé 
+  		   A plusz tárhely miatt nem szabad aggódni 
+		
+		
+		
+		A ténytáblákban is érdemes egyedi kulcsot rakni 
+		  Hagyományos jelentés nélküli integer mezõ 
+		  Klasszikus elõnyök 
+		    Egyedi rekordok azonosítása. Akkor kell, ha nincs legalább egy degenerált mezõ, 
+			ami  a dimenziós kulcsok egyezõsége esetén is megkülönbözteti a rekordokat  
+			Ténytábla frissítése insert/delete módon a PK alapján 
+			ETL folyamatok újraindítása vagy visszavonása 
+			Dokumentálás, hibakeresés 
+			
+		  Extra 
+			Utólagos feldolgozás (késõn érkezõ dimenzió) esetén az érintett sorok kijelölése 
+			Sorok közötti számításokhoz a kapcsolódó rekord azonosítójának tárolása 
+			Másik ténytábla kapcsolódó sorának tárolása 
+		
+		
+		
+		 Inkább fejlesztõi/DBA feladatok 
+		    Statisztika gyûjtés és frissítés 
+			Usage tracking 
+			Indexek karbantartása (drop/recreate) 
+			Particiócserés töltés, index és statisztikai 
+			
+		 Közösen megoldandó kérdések 
+		   FK beállítások a generált táblákhoz 
+		   Parallelizmus beállítás 
+		   
+		   
+		 Értékkészletek kezelése 
+		   A modellezés során általában elõáll 
+		      az egyes attribútumok értékkészlete 
+			  és mappingjai 
+		   Az ETL fejlesztõnek is erre van szüksége a transzformációkhoz 
+		   és az adatminõség ellenõrzéshez 
+		   
+		   
+		   
+		A késõn érkezõ tényrekordok kezelése 
+		Azonosítani kell a tranzakció idõpontjában aktuális verziót az összes SCD2 dimenzióból 
+   		  Be kell illeszteni a rekordot a megfelelõ partícióba 
+		     Megváltozik a múlt, ezért újra kell készíteni az érintett összegzõ 
+			 és egyéb származtatott táblákat 
+			 
+			 Ha nem szabad a múltat megváltoztatni 
+ 			    Korrekciós szegmensbe történõ felvitel 
+		        Kettõs dátumbélyezgés alkalmazása (tényleges dátum, beérkezési dátum) 
+				
+		A dimenziós rekord csak a tényrekord után jön meg 
+ 		Lehetséges kezelési módok 
+		   A tényrekord várakoztatása 
+		   Ha nincs meg a dimenziós érték, akkor egy parkoló állományba teszük, 
+		   és a következõ betöltéskor újra próbálkozunk 
+		   Bizonyos idõ után végleg hibalistára kerül 
+		   Viszonylag egyszerû, de késik/hiányos a DW tartalma 
+
+		   Mesterséges dimenziós értékre kötés 
+ 		      Ha nincs meg a dimenziós érték, akkor egy technikai értékre kötjük 
+			  A DW így teljesen friss, de az utólagos korrekció nehéz 
+			  Dimenziós érték automatikus létrehozása 
+			  A két kulcsértéket tartalmazza, jellemzõket még nem 
+		Csak ha biztosak vagyunk benne, hogy a dimenziórekord meg fog érkezni 		
+		
+Fogalmak:
+
+   Mi egy üzleti kulcs? 
+      Ami a forrásrendszerben azonosítja az adatokat a felhasználók számára 
+      Általában nem változik, a felhasználó által nem módosítható 		

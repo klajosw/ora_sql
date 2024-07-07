@@ -1,0 +1,71 @@
+
+ROWID adattípus formátuma és jelentése (lásd még DBMS_ROWID package)
+--------------------------------------------------------------------
+
+18 karakteren irodik ki, a kovetkezo formaban: OOOOOOFFFBBBBBBRRR
+OOOOOO -  az objektum azonositoja
+FFF    -  fajl azonositoja (tablateren beluli relativ sorszam)
+BBBBBB -  blokk azonosito (a fajlon beluli sorszam)
+RRR    -  sor azonosito (a blokkon beluli sorszam)
+
+A ROWID megjeleniteskor 64-es alapu kodolasban jelenik meg. 
+Az egyes szamoknak (0-63) a következo karakterek felelnek meg:
+A-Z -> (0-25), a-z -> (26-51), 0-9 -> (52-61), '+' -> (62), '/' -> (63)
+
+Pl. 'AAAAAB' -> 000001
+
+
+A NIKOVITS felhasználó CIKK táblája hány blokkot foglal le az adatbázisban?
+(Vagyis hány olyan blokk van, ami ehhez a táblához van rendelve és így
+azok már más táblákhoz nem adhatók hozzá?)
+
+A NIKOVITS felhasználó CIKK táblájának adatai hány blokkban helyezkednek el?
+(Vagyis a tábla sorai ténylegesen hány blokkban vannak tárolva?)
+!!! -> Ez a kérdés nem ugyanaz mint az elõzõ.
+
+Az egyes blokkokban hány sor van?
+
+
+Hozunk létre egy táblát az EXAMPLE táblatéren, amelynek szerkezete azonos a nikovits.cikk 
+tábláéval és pontosan 128 KB helyet foglal az adatbázisban. Foglaljunk le manuálisan egy 
+újabb 128 KB-os extenst a táblához. Vigyünk fel sorokat addig, amig az elsõ blokk tele nem 
+lesz, és 1 további sora lesz még a táblának a második blokkban.
+(A felvitelt plsql programmal végezzük és ne kézzel, mert úgy kicsit sokáig tartana.)
+
+
+Próbáljuk ki az elõzõt ismét, de most a PCTFREE értéket állítsuk 40-re. 
+Mindkét esetben ellenõrizzük is, hogy a sorok tényleg két blokkban vannak,
+és a másodikban csak egyetlen sor van.
+
+
+Állapítsuk meg, hogy a SH.SALES táblának a következõ adatokkal azonosított sora
+(time_id='1999.04.10', prod_id=2860, cust_id=37280) melyik adatfájlban van,
+azon belül melyik blokkban, és a blokkon belül hányadik a sor?
+
+Az elõzõ feladatban megadott sor melyik partícióban van?
+Mennyi az objektum azonosítója, és ez milyen objektum?
+
+
+HÁZI FELADAT
+------------
+Irjunk meg egy PL/SQL fuggvenyt, ami a  ROWID 64-es kodolasanak megfelelo
+szamot adja vissza. A fuggveny parametere egy karakterlanc, eredmenye 
+pedig a kodolt numerikus ertek legyen. (Eleg ha a fuggveny maximum 6 
+hosszu, helyesen kodolt karakterlancokra mukodik, hosszabb karakterlancra,
+vagy rosszul kodolt parameterre adjon vissza -1-et.)
+Ennek a fv-nek a segitsegevel adjuk meg egy tablabeli sor pontos fizikai 
+elhelyezkedeset. (Melyik fajl, melyik blokk, melyik sora) Peldaul az
+ORAUSER.DOLGOZO tabla azon sorara, ahol a dolgozo neve 'KING'.
+
+
+További példák a ROWID használatára
+-----------------------------------
+
+Hozzatok letre egy EXCEPTIONS nevu tablat az utlexcpt.sql nevu script 
+alapjan, majd egy olyan constraintet, amelyet a tablaban levo sorok
+kozul nehany megsert. (Emiatt a constraint letrehozasa hibauzenetet
+kell, hogy eredmenyezzen.) Allapitsatok meg az EXCEPTIONS nevu tabla 
+segitsegevel, hogy mely sorok sertik meg az imenti constraintet. 
+
+
+

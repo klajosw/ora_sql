@@ -1,0 +1,60 @@
+param(  [string]$file = $(throw "file is required"), $matchesPerSplit = 50, $maxFiles = [Int32]::MaxValue, $splitOnNode = $(throw "splitOnNode is required"), $offset = 0 )
+# with a little help of https://gist.github.com/awayken/5861923
+$ErrorActionPreference = "Stop";
+
+trap {
+    $ErrorActionPreference = "Continue"
+    write-error "Script failed: $_ \r\n $($_.ScriptStackTrace)"
+    exit (1);
+}
+
+$file = (resolve-path $file).path
+
+$fileNameExt = [IO.Path]::GetExtension($file)
+$fileNameWithoutExt = [IO.Path]::GetFileNameWithoutExtension($file)
+$fileNameDirectory = [IO.Path]::GetDirectoryName($file)
+
+
+$reader = [System.Xml.XmlReader]::Create($file) 
+ 
+$matchesCount = $idx = 0
+
+try {
+    "Splitting $from on node name='$splitOnNode', with a max of $matchesPerSplit matches per file. Max of $maxFiles files will be generated."
+    $result = $reader.ReadToFollowing($splitOnNode)
+    $hasNextSibling = $true
+    while (-not($reader.EOF) -and $result -and $hasNextSibling -and ($idx -lt $maxFiles + $offset)) {
+        if ($matchesCount -lt $matchesPerSplit) {
+            if($offset -gt $idx) {
+               $idx++
+               continue
+            }
+        
+            $to = [IO.Path]::Combine($fileNameDirectory, "$fileNameWithoutExt.$($idx -$offset)$fileNameExt")
+            "Writing to $to"
+            $toXml = New-Object System.Xml.XmlTextWriter($to, $null)
+            $toXml.Formatting = 'Indented'
+            $toXml.Indentation = 2
+            try {
+               $toXml.WriteStartElement("split")
+               $toXml.WriteAttributeString("cnt", $null, "$idx")
+               
+               do {
+                  $toXml.WriteRaw($reader.ReadOuterXml())
+                  $matchesCount++;
+                  $hasNextSibling = $reader.ReadToNextSibling($splitOnNode)
+               } while($hasNextSibling -and ($matchesCount -lt $matchesPerSplit))
+               $toXml.WriteEndElement();
+            } 
+            finally {
+               $toXml.Flush()
+               $toXml.Close()
+            }
+            $idx++
+            $matchesCount = 0;
+        }
+    }
+}
+finally {
+    $reader.Close()
+}

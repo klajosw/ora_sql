@@ -1,0 +1,165 @@
+CREATE TABLE table_name ( Column name datatype, Column name datatype, . . . );
+ 
+ALTER TABLE table_nameADD (column name datatype)
+
+MODIFY (column name datatype);
+ 
+DROP TABLE table_name;
+ 
+CREATE VIEW view_name (view column name1, view column name2, . . .) as QUERY;
+ 
+DROP VIEW view_name;
+ 
+
+CREATE INDEX index_name onTable_name (column1, column2, . . .);
+ 
+DROP INDEX index_name;
+ 
+CREATE SYNONYM synonym name FOR Object_name;
+ 
+DROP SYNONYM synonym_name;
+ 
+
+DELETE FROM table_name WHERE qualifiers . . . ;
+ 
+INSERT INTO table_name (column1, column2, . . .) VALUES (value1, value2, . . .);
+ 
+UPDATE table_name SET column1 = value, column2 = value, . . .WHERE qualifiers . . . ;
+ 
+RENAME old_name TO new_name;
+ 
+COMMIT;
+ 
+ROLLBACK; ROLLBACK TO savepoint_name;
+ 
+SAVEPOINT savepoint_name;
+ 
+SELECT column1,column2, . . .(or * for all columns)FROM table_name WHERE qualifiers for rows;
+ 
+
+-- SQL*Plus
+
+spool c:\CHAPTER_3_REPORT
+set echo off
+set pagesize 55
+set linesize 132
+set newpage 0
+ttitle left   'All Employees and Phone Numbers' -
+      right  'Pg: ' format 999 sql.pno  skip 1 -
+      center 'Guerrilla Oracle University' skip 1 -
+      center 'As of &&date' skip 2
+column PERSON_ID  format 999999999 Heading 'Person ID'
+column Name      format a20 Heading 'Name'
+column Phone     format a12 Heading 'Phone Number'
+break on PERSON_ID skip 2 -
+
+SELECT  PERSON_TABLE.PERSON_ID,  NAME, PHONE_NUMBER
+                      from PERSON_TABLE,
+TEMP_PERSON_TABLE
+WHERE PERSON_TABLE.PERSON_ID = TEMP_PERSON_TABLE.PERSON_ID
+order by 1;
+spool off;
+
+-- 4 rendszer változó:
+%ROWCOUNT eredmény sorszám,
+%NOTFOUND Nincs több erdménysor,
+%FOUND Eredmény kurzornak van még sora,
+%ISOPEN a kurzor meg van nyítva
+
+-- Oracle tábla terek
+Tablespace  Data File  Contents
+ 
+SYSTEM      SYSTEM01.DBF Data dictionary, definitions of tables, views
+USERS 	    USER01.DBF   Data for applications
+TEMP        TEMP01.DBF   Space for sorts
+RBS         RBS01.DBF    Rolled-back transactions that did not complete normally
+INDX        INDX01.DBF   Indexes tied to the data in the USERS tablespace
+DRSYS       DR01.DBF     Objects tied to Oracle interMedia
+TOOLS       TOOLS01.DBF  Initially empty, used for third-party software
+ 
+redo logs: REDO01.LOG, REDO02.LOG, REDO03.LOG.
+INIT.ORA 
+control files: CONTROL01.CTL, CONTROL02.CTL, CONTROL03.CTL. 
+18 db rollback segments: SYSTEM, RB_TEMP, and RB1 through RB16.
+
+-- SQL*Loader
+
+- control (.ctl) file létrehozása.(bemenet)
+- adat (.dat) file elõállítása.          (bemenet)
+
+- DOS prompt-ból  "SQLLDR" meghívása
+
+- Napló (.log) file   (kimenet)
+- Discard file (.dsc) (kimenet)
+- Hibák file (.bad)   (kimenet)
+
+-- adatbázis rendszer táblák/nézetek
+USER_CATALOG
+ Tables, views, synonyms, and sequences that the user owns. There are only two columns of data: Table_Name and Table_Type.
+ 
+USER_CONS_COLUMNS
+ The columns that are involved with the constraints. Use this with USER_CONSTRAINTS.
+ 
+USER_CONSTRAINTS
+ Any constraints on any table that the user owns. Use ALL_CONSTRAINTS to see the constraints on all the tables that the user can access.
+ 
+USER_OBJECTS
+ Information for all types of objects for the user.
+ 
+USER_RESOURCE_LIMITS
+ Any limits, such as logons, that were given to the user's profile.
+ 
+USER_SEQUENCES
+ All the sequences that the user owns. Use ALL_SEQUENCES to see all the sequences that the user can access.
+ 
+USER_SYNONYMS
+ Synonyms that the user owns. Use ALL_SYNONYMS to see the entire list of synonyms that the user can access.
+ 
+USER_TAB_COLS
+ All the columns for all the tables that the user owns. Use ALL_TAB_COLS to see all the tables and columns that the user can access.
+ 
+USER_TABS
+ 26 columns of information on tables that the user owns. Use the ALL_TABS view to see all the tables that the user can access.
+ 
+USER_VIEWS
+ Views that the user owns. Use ALL_VIEWS to see the views that the user can access.
+ 
+-- 
+
+V$SESSION shows all current sessions.
+V$SYSSTAT gives statistics about the entire database.
+V$BGPROCESS shows any background processes that are active.
+V$DATAFILE shows data on the files in the database
+
+--
+left outer join: WHERE STUDENTS.STUDENT_ID(+) = TEST_HISTORY.STUDENT_ID.
+right outer join: WHERE TEST_HISTORY.TEST_ID = TEST_ID.TEST_ID(+)
+
+--
+SELECT TRANSLATE(L_NAME, 'R', ' ') from STUDENTS   
+SELECT RTRIM(TEST_NAME, 'Ph.D') from TEST_ID;
+SELECT RPAD(L_NAME,40,'.'), F_NAME from STUDENTS;
+SELECT LENGTH(L_NAME) from STUDENTS
+SELECT SUBSTR(L_NAME, 3,5) from STUDENTS; 
+SELECT L_NAME||F_NAME from STUDENTS ::: SELECT CONCAT (L_NAME,F_NAME) from STUDENTS; 
+SELECT L_NAME INSTR(L_NAME, 'a') from STUDENTS;
+DECODE (mezõnév, mit1, mire1, mit2, mire2, mit3, mire3,  egyébként )
+
+-- Tábla töltése másik táblából
+CREATE TABLE t AS SELECT * FROM table1@remote_site;
+INSERT INTO t SELECT * FROM table1@remote_site;
+UPDATE t SET lobcol = (SELECT lobcol FROM table1@remote_site);
+INSERT INTO table1@remote_site SELECT * FROM local_table;
+UPDATE table1@remote_site SET lobcol = (SELECT lobcol FROM local_table);
+DELETE FROM table1@remote_site <WHERE clause involving non_lob_columns>
+
+-- Optimalizálás hangolása (ALL_ROWS, FIRST_ROWS, DBMS_STATS, APPEND, CACHE, INSERT, FULL )
+SELECT /*+ ALL_ROWS */ employee_id, last_name, salary, job_id
+  FROM employees
+  WHERE employee_id = 7566;
+
+SELECT /*+ INDEX_JOIN(e emp_manager_ix emp_department_ix) */ department_id
+  FROM employees e
+  WHERE manager_id < 110
+    AND department_id < 50;
+
